@@ -40,6 +40,7 @@ qt_add_qml_module(appuser
             SOURCES controllers/minifilterlogmodel.h controllers/minifilterlogmodel.cpp
             SOURCES
             SOURCES controllers/databasemanager.h controllers/databasemanager.cpp
+            SOURCES controllers/alertmodel.h controllers/alertmodel.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
