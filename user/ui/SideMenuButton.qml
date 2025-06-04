@@ -5,7 +5,6 @@ Rectangle {
     property var buttonText
     property var buttonPageLink
     property var fontColour: "#343A40"
-    property var dataTable
 
     width: 160
     height: 40
@@ -49,10 +48,7 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
-        onClicked: {
-            dbManager.currentTable = dataTable
-            stackView.replace(buttonPageLink)
-        }
+        onClicked: stackView.replace(buttonPageLink)
     }
 }
 

@@ -52,6 +52,7 @@ Page {
                     color: "#ffffff"
                 }
 
+
                 //Filters: [Volume, MajorOperation, MinorOperation, ProcessPath, OpFileName, RequestorMode, TimeStart, TimeEnd]
                 //Autosuggest for next path based on what is available in logs.
 

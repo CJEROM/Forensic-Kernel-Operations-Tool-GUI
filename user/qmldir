@@ -1,0 +1,13 @@
+module user
+typeinfo appuser.qmltypes
+prefer :/qt/qml/user/
+Main 1.0 Main.qml
+AlertsPage 1.0 ui/AlertsPage.qml
+DataPage 1.0 ui/DataPage.qml
+HomePage 1.0 ui/HomePage.qml
+LeftSideMenuBar 1.0 ui/LeftSideMenuBar.qml
+PageTitle 1.0 ui/PageTitle.qml
+RulesPage 1.0 ui/RulesPage.qml
+SettingsPage 1.0 ui/SettingsPage.qml
+SideMenuButton 1.0 ui/SideMenuButton.qml
+

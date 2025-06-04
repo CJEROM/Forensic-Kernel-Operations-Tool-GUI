@@ -13,6 +13,8 @@ class DatabaseManager : public QObject
 
     Q_PROPERTY(QAbstractItemModel * model READ model CONSTANT)
 
+    Q_PROPERTY(QString currentTable READ currentTable WRITE setCurrentTable NOTIFY currentTableChanged)
+
     Q_PROPERTY(QStringList selectedRoles READ selectedRoles WRITE setSelectedRoles NOTIFY selectedRolesChanged)
     Q_PROPERTY(QVariantMap filters READ filters WRITE setFilters NOTIFY filtersChanged)
     Q_PROPERTY(QString sortColumn READ sortColumn WRITE setSortColumn NOTIFY sortColumnChanged)
@@ -20,15 +22,21 @@ class DatabaseManager : public QObject
 
     Q_PROPERTY(int rowsPerPage READ rowsPerPage WRITE setRowsPerPage NOTIFY rowsPerPageChanged)
     Q_PROPERTY(int totalPages READ totalPages NOTIFY totalPagesChanged)
+    Q_PROPERTY(int currentPage READ currentPage WRITE setCurrentPage NOTIFY currentPageChanged)
     //QML_ELEMENT
 public:
     explicit DatabaseManager(QObject *parent = nullptr);
     QAbstractItemModel * model() const;
 
+    QString currentTable() const;
+    void setCurrentTable(const QString &table);
+
     // Functions for table management
     Q_INVOKABLE void runQuery(const QString &query);
     Q_INVOKABLE int computeColumnWidth(int columnIndex, int fontSize = 12);
+    Q_INVOKABLE QString convertUnixToDateTime(qint64 unix);
     Q_INVOKABLE QStringList getRoleNames() const;
+    void defineManualRoles();
 
     // Setting what columns to display
     QStringList selectedRoles() const;
@@ -54,10 +62,21 @@ public:
     int rowsPerPage() const;
     void setRowsPerPage(int rows);
     int totalPages() const;
+    int currentPage() const;
+    void setCurrentPage(int page);
+    void updateTotalPages();
+
+    QStringList sortedByModelOrder(const QStringList &roles) const;
 
 private:
     QSqlDatabase db;
     QAbstractItemModel  *m_model;
+
+    QString m_currentTable;
+
+    QStringList m_allAvailableColumns;
+
+    QMap<QString, QStringList> m_manualRoleDefinitions;
 
     QStringList m_selectedRoles;
     QVariantMap m_filters;
@@ -66,8 +85,11 @@ private:
 
     int m_rowsPerPage = 100;
     int m_totalPages = 1;
+    int m_currentPage = 0;
 
 signals:
+    void currentTableChanged();
+
     void selectedRolesChanged();
     void filtersChanged();
     void sortColumnChanged();
@@ -75,6 +97,9 @@ signals:
 
     void rowsPerPageChanged();
     void totalPagesChanged();
+    void currentPageChanged();
+
+    void queryHasRefreshed();
 };
 
 #endif // DATABASEMANAGER_H

@@ -51,22 +51,57 @@ Page {
 
             height: 30
 
-
-
-            Rectangle {
+            RowLayout {
                 anchors.fill: parent
-                color: '#ffffff'
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 10
 
-                ToolButton {
-                    id: dropdownButton
+                Button {
+                    width: 100
+                    text: "Previous"
+                    enabled: dbManager.currentPage > 0
+                    onClicked: dbManager.currentPage = (dbManager.currentPage - 1)
+                }
+
+                Text {
+                    width: 100
+                    text: "Page " + (dbManager.currentPage + 1) + " of " + dbManager.totalPages
+                }
+
+                Button {
+                    width: 100
+                    text: "Next"
+                    enabled: dbManager.currentPage + 1 < dbManager.totalPages
+                    onClicked: dbManager.currentPage = (dbManager.currentPage + 1)
+                }
+
+                Button {
+                    id: rowsPerPageButton
+                    text: "Rows: " + dbManager.rowsPerPage
+
+                    Menu {
+                        id: rowsPerPageDropdownMenu
+                        width: 200
+
+                        MenuItem { text: "100"; onTriggered: dbManager.rowsPerPage = 100 }
+                        MenuItem { text: "250"; onTriggered: dbManager.rowsPerPage = 250 }
+                        MenuItem { text: "500"; onTriggered: dbManager.rowsPerPage = 500 }
+                        MenuItem { text: "1000"; onTriggered: dbManager.rowsPerPage = 1000 }
+                    }
+
+                    onClicked: rowsPerPageDropdownMenu.open()
+                }
+
+                Button {
+                    id: columnsDropdownButton
                     text: "Columns To Show"
 
                     Menu {
-                        id: dropdownMenu
+                        id: columnsDropdownMenu
                         width: 200
 
                         Repeater {
-                            model: tableView.roleNameList
+                            model: dbManager.selectedRoles()
 
                             MenuItem {
                                 contentItem: CheckBox {
@@ -81,15 +116,14 @@ Page {
                         }
                     }
 
-                    onClicked: dropdownMenu.open()
+                    onClicked: columnsDropdownMenu.open()
                 }
 
-                // ToolButton {
-                //     id: refreshButton
-                //     text: "Columns To Show"
-
-                //     onClicked: dropdownMenu.open()
-                // }
+                Button {
+                    width: 100
+                    text: "Refresh"
+                    onClicked: dbManager.refreshQuery()
+                }
             }
         }
 
@@ -127,7 +161,7 @@ Page {
                     Text {
                         anchors.centerIn: parent
                         font.bold: true
-                        text: tableView.roleNameList[column]
+                        text: dbManager.selectedRoles[column]
                     }
                 }
 
@@ -149,64 +183,35 @@ Page {
                 rightMargin: vScroll.width + 1
                 bottomMargin: hScroll.height + 1
 
-                property var roleNameList: [
-                    "LogID",
-                    "SeqNum",
-                    "OprType",
-                    "PreOpTime",
-                    "PostOpTime",
-                    "ProcessId",
-                    "ProcessFilePath",
-                    "ThreadId",
-                    "MajorOp",
-                    "MinorOp",
-                    "IrpFlags",
-                    "DeviceObj",
-                    "FileObj",
-                    "FileTransaction",
-                    "OpStatus",
-                    "Information",
-                    "Arg1",
-                    "Arg2",
-                    "Arg3",
-                    "Arg4",
-                    "Arg5",
-                    "Arg6",
-                    "OpFileName",
-                    "RequestorMode",
-                    "RuleID",
-                    "RuleAction"
-                ]
-
                 // Define column widths manually (since TableViewColumn is not available)
                 columnWidthProvider: function(column) {
-                    switch (column) {
-                        case 0:  return 60   // LogID
-                        case 1:  return 60   // SeqNum
-                        case 2:  return 80  // OprType
-                        case 3:  return 160  // PreOpTime
-                        case 4:  return 160  // PostOpTime
-                        case 5:  return 80   // ProcessId
-                        case 6:  return dbManager.computeColumnWidth(6, 12)  // ProcessFilePath
-                        case 7:  return 80   // ThreadId
-                        case 8:  return 300  // MajorOp
-                        case 9:  return 250  // MinorOp
-                        case 10: return 80  // IrpFlags
-                        case 11: return 160  // DeviceObj
-                        case 12: return 160  // FileObj
-                        case 13: return 160  // FileTransaction
-                        case 14: return 400  // OpStatus
-                        case 15: return 160  // Information
-                        case 16: return 100  // Arg1
-                        case 17: return 100  // Arg2
-                        case 18: return 100  // Arg3
-                        case 19: return 100  // Arg4
-                        case 20: return 100  // Arg5
-                        case 21: return 100  // Arg6
-                        case 22: return dbManager.computeColumnWidth(22, 12)  // OpFileName
-                        case 23: return 100  // RequestorMode
-                        case 24: return 80   // RuleID
-                        case 25: return 80  // RuleAction
+                    switch (dbManager.selectedRoles[column]) {
+                        case "LogID":  return 100   // LogID
+                        case "SeqNum":  return 100   // SeqNum
+                        case "OprType":  return 80  // OprType
+                        case "PreOpTime":  return 160  // PreOpTime
+                        case "PostOpTime":  return 160  // PostOpTime
+                        case "ProcessId":  return 80   // ProcessId
+                        case "ProcessFilePath":  return dbManager.computeColumnWidth(column, 12)  // ProcessFilePath
+                        case "ThreadId":  return 80   // ThreadId
+                        case "MajorOp":  return 300  // MajorOp
+                        case "MinorOp":  return 250  // MinorOp
+                        case "IrpFlags": return 80  // IrpFlags
+                        case "DeviceObj": return 160  // DeviceObj
+                        case "FileObj": return 160  // FileObj
+                        case "FileTransaction": return 160  // FileTransaction
+                        case "OpStatus": return 400  // OpStatus
+                        case "Information": return 160  // Information
+                        case "Arg1": return 100  // Arg1
+                        case "Arg2": return 100  // Arg2
+                        case "Arg3": return 100  // Arg3
+                        case "Arg4": return 100  // Arg4
+                        case "Arg5": return 100  // Arg5
+                        case "Arg6": return 100  // Arg6
+                        case "OpFileName": return dbManager.computeColumnWidth(column, 12)  // OpFileName
+                        case "RequestorMode": return 100  // RequestorMode
+                        case "RuleID": return 80   // RuleID
+                        case "RuleAction": return 80  // RuleAction
                         default: return 80
                     }
                 }
@@ -220,13 +225,17 @@ Page {
 
                     Text {
                         anchors.centerIn: parent
-                        text: model[tableView.roleNameList[column]]
+                        text: model[dbManager.selectedRoles[column]]
                         font.pixelSize: 12
                         elide: Text.ElideRight
                     }
                 }
+            }
 
-
+            Connections {
+                target: dbManager
+                onQueryHasRefreshed: tableView.forceLayout()
+                // onTotalPagesChanged:
             }
         }
 

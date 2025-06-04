@@ -3,11 +3,7 @@
 MinifilterLogModel::MinifilterLogModel(QObject *parent)
     : QSqlQueryModel(parent)
 {
-    // Run default query
-    refreshQuery("SELECT * FROM MinifilterLog LIMIT 100");
-    m_columnRoleNames.clear();
-    for (int i = 0; i < columnCount(); ++i)
-        m_columnRoleNames << headerData(i, Qt::Horizontal).toString();
+
 }
 
 void MinifilterLogModel::refreshQuery(const QString& query) {
@@ -25,8 +21,8 @@ QVariant MinifilterLogModel::data(const QModelIndex &index, int role) const {
 
 QHash<int, QByteArray> MinifilterLogModel::roleNames() const {
     QHash<int, QByteArray> roles;
-    for (int i = 0; i < m_columnRoleNames.size(); ++i) {
-        roles[Qt::UserRole + i] = m_columnRoleNames[i].toUtf8();
+    for (int i = 0; i < columnCount(); ++i) {
+        roles[Qt::UserRole + i] = headerData(i, Qt::Horizontal).toString().toUtf8();
     }
     return roles;
 }

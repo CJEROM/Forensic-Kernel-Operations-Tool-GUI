@@ -12,7 +12,6 @@ Rectangle {
         buttonSource: "qrc:/qt/qml/user/assets/img/home.png"
         buttonPageLink: "qrc:/qt/qml/user/ui/HomePage.qml"
         buttonText: "Home"
-        dataTable: "MinifilterLog"
 
         anchors {
             left: parent.left
@@ -27,7 +26,6 @@ Rectangle {
         buttonSource: "qrc:/qt/qml/user/assets/img/alert-black.png"
         buttonPageLink: "qrc:/qt/qml/user/ui/AlertsPage.qml"
         buttonText: "Alerts"
-        dataTable: "Alerts"
 
         anchors {
             left: parent.left
@@ -42,7 +40,6 @@ Rectangle {
         buttonSource: "qrc:/qt/qml/user/assets/img/database-black.png"
         buttonPageLink: "qrc:/qt/qml/user/ui/DataPage.qml"
         buttonText: "Data"
-        dataTable: "MinifilterLog"
 
         anchors {
             left: parent.left

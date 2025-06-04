@@ -8,7 +8,7 @@ Page {
     }
 
     Rectangle {
-        id: alertsPage
+        id: dataPage
         anchors {
             left: leftSideMenuBar.right
             top: parent.top
@@ -28,7 +28,7 @@ Page {
             }
 
             Text {
-                text: "Alerts"
+                text: "Data"
 
                 anchors {
                     horizontalCenter: parent.horizontalCenter
@@ -53,55 +53,38 @@ Page {
 
             RowLayout {
                 anchors.fill: parent
-                // Layout.alignment: Qt.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
                 spacing: 10
 
                 Button {
                     width: 100
                     text: "Previous"
-                    enabled: dbManager.currentPage > 0
-                    onClicked: dbManager.currentPage = (dbManager.currentPage - 1)
+                    enabled: dbManager.currentPage() > 0
+                    onClicked: dbManager.setCurrentPage(dbManager.currentPage() - 1)
                 }
 
-                Text {
-                    width: 200
-                    text: "Page " + (dbManager.currentPage + 1) + " of " + dbManager.totalPages
+                Label {
+                    width: 100
+                    text: "Page " + (dbManager.currentPage() + 1) + " of " + dbManager.totalPages()
                 }
 
                 Button {
                     width: 100
                     text: "Next"
-                    enabled: dbManager.currentPage + 1 < dbManager.totalPages
-                    onClicked: dbManager.currentPage = (dbManager.currentPage + 1)
+                    enabled: dbManager.currentPage() + 1 < dbManager.totalPages()
+                    onClicked: dbManager.setCurrentPage(dbManager.currentPage() + 1)
                 }
 
-                Button {
-                    id: rowsPerPageButton
-                    text: "Rows: " + dbManager.rowsPerPage
-
-                    Menu {
-                        id: rowsPerPageDropdownMenu
-                        width: 200
-
-                        MenuItem { text: "100"; onTriggered: dbManager.rowsPerPage = 100 }
-                        MenuItem { text: "250"; onTriggered: dbManager.rowsPerPage = 250 }
-                        MenuItem { text: "500"; onTriggered: dbManager.rowsPerPage = 500 }
-                        MenuItem { text: "1000"; onTriggered: dbManager.rowsPerPage = 1000 }
-                    }
-
-                    onClicked: rowsPerPageDropdownMenu.open()
-                }
-
-                Button {
-                    id: columnsDropdownButton
+                ToolButton {
+                    id: dropdownButton
                     text: "Columns To Show"
 
                     Menu {
-                        id: columnsDropdownMenu
+                        id: dropdownMenu
                         width: 200
 
                         Repeater {
-                            model: dbManager.getRoleNames()
+                            model: dbManager.getRoleNames().values
 
                             MenuItem {
                                 contentItem: CheckBox {
@@ -116,13 +99,7 @@ Page {
                         }
                     }
 
-                    onClicked: columnsDropdownMenu.open()
-                }
-
-                Button {
-                    width: 100
-                    text: "Refresh"
-                    onClicked: dbManager.refreshQuery()
+                    onClicked: dropdownMenu.open()
                 }
             }
         }
@@ -161,7 +138,7 @@ Page {
                     Text {
                         anchors.centerIn: parent
                         font.bold: true
-                        text: dbManager.selectedRoles[column]
+                        text: dbManager.getRoleNames()[column]
                     }
                 }
 
@@ -185,10 +162,33 @@ Page {
 
                 // Define column widths manually (since TableViewColumn is not available)
                 columnWidthProvider: function(column) {
-                    switch (dbManager.selectedRoles[column]) {
-                        case "AlertID": return 80  // RuleAction
-                        case "Timestamp": return 160  // RuleAction
-                        case "AlertMessage": return parent.width - 244 - (vScroll.width + 1)  // RuleAction
+                    switch (dbManager.getRoleNames()[column]) {
+                        case "LogID":  return 100   // LogID
+                        case "SeqNum":  return 100   // SeqNum
+                        case "OprType":  return 80  // OprType
+                        case "PreOpTime":  return 160  // PreOpTime
+                        case "PostOpTime":  return 160  // PostOpTime
+                        case "ProcessId":  return 80   // ProcessId
+                        case "ProcessFilePath":  return dbManager.computeColumnWidth(6, 12)  // ProcessFilePath
+                        case "ThreadId":  return 80   // ThreadId
+                        case "MajorOp":  return 300  // MajorOp
+                        case "MinorOp":  return 250  // MinorOp
+                        case "IrpFlags": return 80  // IrpFlags
+                        case "DeviceObj": return 160  // DeviceObj
+                        case "FileObj": return 160  // FileObj
+                        case "FileTransaction": return 160  // FileTransaction
+                        case "OpStatus": return 400  // OpStatus
+                        case "Information": return 160  // Information
+                        case "Arg1": return 100  // Arg1
+                        case "Arg2": return 100  // Arg2
+                        case "Arg3": return 100  // Arg3
+                        case "Arg4": return 100  // Arg4
+                        case "Arg5": return 100  // Arg5
+                        case "Arg6": return 100  // Arg6
+                        case "OpFileName": return dbManager.computeColumnWidth(22, 12)  // OpFileName
+                        case "RequestorMode": return 100  // RequestorMode
+                        case "RuleID": return 80   // RuleID
+                        case "RuleAction": return 80  // RuleAction
                         default: return 80
                     }
                 }
@@ -202,20 +202,18 @@ Page {
 
                     Text {
                         anchors.centerIn: parent
-                        text: model[dbManager.selectedRoles[column]]
+                        text: model[dbManager.getRoleNames()[column]]
                         font.pixelSize: 12
                         elide: Text.ElideRight
                     }
                 }
-            }
 
-            Connections {
-                target: dbManager
-                onQueryHasRefreshed: tableView.forceLayout()
+
             }
         }
 
         color: "#CED4DA"
     }
 }
+
 
