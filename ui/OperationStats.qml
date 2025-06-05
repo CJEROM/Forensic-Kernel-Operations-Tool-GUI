@@ -6,85 +6,101 @@ import QtCharts 2.15
 Column {
     spacing: 10
 
+    // RowLayout {
+    //     height: 400; width: parent.width; spacing: 10
+
+    //     ChartView {
+    //         Layout.fillWidth: true
+    //         Layout.fillHeight: true
+    //         title: "Requestor Mode Count"
+    //         legend.alignment: Qt.AlignBottom
+    //         antialiasing: true
+
+    //         BarSeries {
+    //             id: requestorSeries
+    //             BarSet {
+    //                 label: "Mode"
+    //                 values: modelRequestorMode.count > 0 ? modelRequestorMode.get(0).Count.split(",").map(Number) : []
+    //             }
+    //         }
+    //     }
+
+    //     ChartView {
+    //         Layout.fillWidth: true
+    //         Layout.fillHeight: true
+    //         title: "Operation Status Count"
+    //         legend.alignment: Qt.AlignBottom
+    //         antialiasing: true
+
+    //         BarSeries {
+    //             id: opStatusSeries
+    //             BarSet {
+    //                 label: "Status"
+    //                 values: modelOpStatus.count > 0 ? modelOpStatus.get(0).Count.split(",").map(Number) : []
+    //             }
+    //         }
+    //     }
+    // }
+
+    RowLayout {
+        height: 400; width: parent.width; spacing: 10
+
+        ChartView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            title: "Requestor Mode Count"
+            legend.alignment: Qt.AlignBottom
+            antialiasing: true
+
+            BarSeries {
+                id: requestorSeries
+                BarSet {
+                    label: "Mode"
+                    values: modelRequestorMode.count > 0 ? modelRequestorMode.get(0).Count.split(",").map(Number) : []
+                }
+            }
+        }
+
+        ChartView {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            title: "Operation Status Count"
+            legend.alignment: Qt.AlignBottom
+            antialiasing: true
+
+            BarSeries {
+                id: opStatusSeries
+                BarSet {
+                    label: "Status"
+                    values: modelOpStatus.count > 0 ? modelOpStatus.get(0).Count.split(",").map(Number) : []
+                }
+            }
+        }
+    }
+
     RowLayout {
         width: parent.width
         spacing: 10
 
-        Rectangle {
+        TableView {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            height: 400
-            color: "white"
-
-            ChartView {
-                anchors.fill: parent
-                title: "Bar Chart 1"
-                legend.alignment: Qt.AlignBottom
-                antialiasing: true
-
-                BarSeries {
-                    axisX: BarCategoryAxis { categories: ["2007", "2008", "2009", "2010", "2011", "2012"] }
-                    BarSet { label: "Bob"; values: [2, 2, 3, 4, 5, 6] }
-                    BarSet { label: "Susan"; values: [5, 1, 2, 4, 1, 7] }
-                    BarSet { label: "James"; values: [3, 5, 8, 13, 5, 8] }
-                }
+            Layout.fillHeight: true
+            height: 300
+            model: modelDurationSummary
+            delegate: ItemDelegate {
+                text: model.MajorOp + ", " + model.MinorOp + " | Avg: " + model.AvgDurationNano + " ns"
             }
         }
 
-        Rectangle {
+        TableView {
             Layout.fillWidth: true
             Layout.preferredWidth: 1
-            height: 400
-            color: "white"
-
-            ChartView {
-                anchors.fill: parent
-                title: "Bar Chart 2"
-                legend.alignment: Qt.AlignBottom
-                antialiasing: true
-
-                BarSeries {
-                    axisX: BarCategoryAxis { categories: ["A", "B", "C"] }
-                    BarSet { label: "Sample"; values: [1, 2, 3] }
-                }
-            }
-        }
-    }
-
-    Rectangle {
-        width: parent.width
-        height: 400
-        color: "white"
-
-        ChartView {
-            anchors.fill: parent
-            title: "Bar Chart 1"
-            legend.alignment: Qt.AlignBottom
-            antialiasing: true
-
-            BarSeries {
-                axisX: BarCategoryAxis { categories: ["2007", "2008", "2009", "2010", "2011", "2012"] }
-                BarSet { label: "Bob"; values: [2, 2, 3, 4, 5, 6] }
-                BarSet { label: "Susan"; values: [5, 1, 2, 4, 1, 7] }
-                BarSet { label: "James"; values: [3, 5, 8, 13, 5, 8] }
-            }
-        }
-    }
-
-    Rectangle {
-        width: parent.width
-        height: 400
-        color: "white"
-
-        ChartView {
-            anchors.fill: parent
-            title: "Bar Chart 2"
-            legend.alignment: Qt.AlignBottom
-            antialiasing: true
-
-            BarSeries {
-                axisX: BarCategoryAxis { categories: ["A", "B", "C"] }
-                BarSet { label: "Sample"; values: [1, 2, 3] }
+            Layout.fillHeight: true
+            height: 300
+            model: modelBreakdown
+            delegate: ItemDelegate {
+                text: model.MajorOp + " / " + model.MinorOp + ": " + model.Count
             }
         }
     }

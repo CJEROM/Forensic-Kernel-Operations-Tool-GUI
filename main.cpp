@@ -5,9 +5,13 @@
 #include <QtSql>
 #include <QQmlContext>
 
-#include <QSqlTableModel>
+#include <QSqlQueryModel>
+#include <QAbstractItemModel>
+#include <QAbstractTableModel>
+#include <QQmlEngine>
 
 #include "controllers/DatabaseManager.h"
+#include "controllers/DataModelRegistry.h"
 
 int main(int argc, char *argv[])
 {
@@ -21,14 +25,11 @@ int main(int argc, char *argv[])
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection);
 
-
     DatabaseManager dbManager;
     engine.rootContext()->setContextProperty("dbManager", &dbManager);
 
-    // QHash<int, QByteArray> roles = dbManager.model()->roleNames();
-    // for (auto it = roles.begin(); it != roles.end(); ++it) {
-    //     qDebug() << "Role:" << it.key() << "->" << it.value();
-    // }
+    DataModelRegistry *dataModelRegistry = new DataModelRegistry;
+    engine.rootContext()->setContextProperty("dataModelRegistry", dataModelRegistry);
 
     engine.loadFromModule("user", "Main");
 

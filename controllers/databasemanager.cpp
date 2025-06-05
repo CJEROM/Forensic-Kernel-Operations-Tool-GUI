@@ -13,7 +13,8 @@
 // =============================================================================== Constructor ===============================================================================
 
 DatabaseManager::DatabaseManager(QObject *parent)
-    : QObject{parent} {
+    : QObject{parent}
+{
     setDatabasePath("C:/Users/CephJ/Desktop/CSEC3100 Project/log.db");
 }
 
@@ -142,11 +143,10 @@ void DatabaseManager::runQuery(const QString &query) {
     auto logModel = qobject_cast<MinifilterLogModel *>(m_model);
     if (logModel) {
         logModel->refreshQuery(query);
+        emit queryHasRefreshed();
     } else {
         qWarning() << "runQuery called, but current model is not MinifilterLogModel";
     }
-
-    emit queryHasRefreshed();
 }
 
 // Refresh the data shown by re-applying filters and sorting
@@ -385,7 +385,7 @@ void DatabaseManager::applyFiltersWithSort(const QVariantMap &filters, const QSt
         // Choose LIKE or = based on value content or heuristics
         if (value.contains('%') || value.contains('_')) {
             conditions << QString("%1 LIKE '%2'").arg(column, value); // allow wildcard input
-        } else if (column.contains("Path", Qt::CaseInsensitive) || column.contains("Name", Qt::CaseInsensitive)) {
+        } else if (column == "OpFileName" || column == "ProcessFilePath") {
             conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value); // partial match for paths/files
         } else if (column == "PreOpTime" || column == "PostOpTime") {
             qint64 raw = convertFlexibleDateTimeToRawTicks(value);
@@ -501,7 +501,7 @@ void DatabaseManager::updateTotalPages() {
 
         if (value.contains('%') || value.contains('_')) {
             conditions << QString("%1 LIKE '%2'").arg(column, value);
-        } else if (column.contains("Path", Qt::CaseInsensitive) || column.contains("Name", Qt::CaseInsensitive)) {
+        } else if (column == "OpFileName" || column == "ProcessFilePath") {
             conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value);
         } else if (column == "PreOpTime" || column == "PostOpTime") {
             qint64 raw = convertFlexibleDateTimeToRawTicks(value);

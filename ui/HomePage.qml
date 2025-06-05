@@ -45,7 +45,13 @@ Page {
             height: 100
 
             Repeater {
-                model: ["Number of Operations", "From User-Mode", "Blocked Operations", "Triggered Rules"]
+                model: [
+                    { title: "Number of Operations", value: dataModelRegistry.(datamodelTotalOps.count > 0 ? modelTotalOps.get(0).TotalOperations : "Loading...") },
+                    { title: "From User-Mode", value: ">999,999" },
+                    { title: "Blocked Operations", value: ">999,999" },
+                    { title: "Triggered Rules", value: ">999,999" }
+                ]
+
                 Rectangle {
                     Layout.fillWidth: true
                     height: 150
@@ -55,8 +61,16 @@ Page {
                     Column {
                         anchors.centerIn: parent
                         spacing: 4
-                        Text { text: ">999,999"; font.pixelSize: 18; font.bold: true }
-                        Text { text: modelData; font.pixelSize: 13 }
+                        Text {
+                            text: modelData.value
+                            font.pixelSize: 18
+                            font.bold: true
+                        }
+
+                        Text {
+                            text: modelData.title
+                            font.pixelSize: 13
+                        }
                     }
                 }
             }

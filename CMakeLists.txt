@@ -39,11 +39,12 @@ qt_add_qml_module(appuser
         assets/img/settings-black.png
         assets/img/sort-black.png
     SOURCES
-        controllers/connection.h
+
         controllers/minifilterlogmodel.h
         controllers/minifilterlogmodel.cpp
         controllers/databasemanager.h
         controllers/databasemanager.cpp
+        SOURCES controllers/datamodelregistry.h controllers/datamodelregistry.cpp
 
 )
 
