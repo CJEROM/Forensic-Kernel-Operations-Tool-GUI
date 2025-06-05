@@ -69,10 +69,66 @@ int DatabaseManager::computeColumnWidth(int columnIndex, int fontSize) {
     return maxWidth;
 }
 
-// Dynamically compute optimal width for a column (for auto-sizing in UI)
-QString DatabaseManager::convertUnixToDateTime(qint64  unix) {
-    return QDateTime::fromSecsSinceEpoch(unix).toString("yyyy-MM-dd hh:mm:ss");
+QString DatabaseManager::convertUnixToDateTime(qint64 filetime) {
+    constexpr qint64 TICKS_PER_SECOND = 10000000LL;
+    constexpr qint64 UNIX_EPOCH_FILETIME = 116444736000000000LL;
+
+    if (filetime < UNIX_EPOCH_FILETIME || filetime > 200000000000000000LL) {
+        return "Invalid timestamp";
+    }
+
+    qint64 unixTicks = filetime - UNIX_EPOCH_FILETIME;
+    qint64 seconds = unixTicks / TICKS_PER_SECOND;
+    qint64 subSecondTicks = unixTicks % TICKS_PER_SECOND;
+
+    QDateTime dt = QDateTime::fromSecsSinceEpoch(seconds, Qt::UTC);
+
+    // Full 100-nanosecond precision (7 decimal places)
+    return dt.toString("yyyy-MM-dd hh:mm:ss.") +
+           QString("%1").arg(subSecondTicks, 7, 10, QLatin1Char('0'));// + " UTC";
 }
+
+qint64 DatabaseManager::convertFlexibleDateTimeToRawTicks(const QString &input) {
+    QString value = input.trimmed();
+    QString base, fraction = "0000000";
+
+    if (value.contains('.')) {
+        QStringList split = value.split('.');
+        base = split.value(0);
+        fraction = split.value(1).leftJustified(7, '0', true); // pad to 7 digits
+    } else {
+        base = value;
+    }
+
+    // Auto-fill missing components (flexible input like 2025 → 2025-01-01 00:00:00)
+    QStringList parts = base.split(' ');
+    QString date = parts.value(0);
+    QString time = parts.value(1, "00:00:00");
+
+    QStringList dateParts = date.split('-');
+    if (dateParts.size() < 3)
+        date += QString("-%1").arg("01").repeated(3 - dateParts.size());
+
+    QString fullDateTime = date + " " + time;
+
+    QDateTime dt = QDateTime::fromString(fullDateTime, "yyyy-MM-dd hh:mm:ss");
+    dt.setTimeSpec(Qt::UTC); // very important
+
+    if (!dt.isValid()) {
+        qWarning() << "Invalid date-time input:" << fullDateTime;
+        return -1;
+    }
+
+    constexpr qint64 TICKS_PER_SECOND = 10'000'000LL;
+    constexpr qint64 FILETIME_EPOCH = 116444736000000000LL;
+
+    bool ok = false;
+    qint64 fractionalTicks = fraction.toLongLong(&ok);
+    if (!ok) fractionalTicks = 0;
+
+    return FILETIME_EPOCH + (dt.toSecsSinceEpoch() * TICKS_PER_SECOND) + fractionalTicks;
+}
+
 
 // =============================================================================== Query Functions ===============================================================================
 
@@ -93,6 +149,36 @@ void DatabaseManager::refreshQuery() {
     applyFiltersWithSort(m_filters, m_sortColumn, m_sortOrder);
     updateTotalPages();
 }
+
+// Get unique values of a row in table
+
+QStringList DatabaseManager::getUniqueValues(const QString &columnName) {
+    QStringList values;
+
+    if (columnName.isEmpty() || !db.isOpen()) {
+        qWarning() << "getUniqueValues: Invalid column or DB not open";
+        return values;
+    }
+
+    QString queryStr = QString("SELECT DISTINCT %1 FROM %2").arg(columnName, m_currentTable);
+    QSqlQuery query(queryStr);
+
+    if (!query.exec()) {
+        qWarning() << "Failed to execute unique values query:" << query.lastError().text();
+        return values;
+    }
+
+    while (query.next()) {
+        values << query.value(0).toString();
+    }
+
+    values.sort(Qt::CaseInsensitive);  // Optional: sort alphabetically
+    return values;
+}
+
+
+// Get
+
 
 // =============================================================================== Setting Table ===============================================================================
 
@@ -247,20 +333,72 @@ void DatabaseManager::setFilter(const QString &key, const QVariant &value) {
     emit filtersChanged();
 }
 
+void DatabaseManager::removeFilter(const QString &key) {
+    if (m_filters.contains(key)) {
+        m_filters.remove(key);
+        emit filtersChanged();
+
+        m_currentPage = 0;
+        emit currentPageChanged();
+
+        refreshQuery();
+    } else {
+        qDebug() << "Filter not found:" << key;
+    }
+}
+
+
+void DatabaseManager::clearFilters() {
+    if (!m_filters.isEmpty()) {
+        m_filters.clear();
+        emit filtersChanged();
+
+        m_currentPage = 0;
+        emit currentPageChanged();
+
+        refreshQuery();
+    }
+}
+
 // Apply filters and sort options to build and execute a SQL query
 void DatabaseManager::applyFiltersWithSort(const QVariantMap &filters, const QString &sortColumn, const QString &sortOrder) {
     QStringList conditions;
 
-    if (filters.contains("MajorFunction") && !filters["MajorFunction"].toString().isEmpty()) {
-        conditions << QString("MajorFunction = '%1'").arg(filters["MajorFunction"].toString());
-    }
+    // Set of known integer columns
+    static const QSet<QString> intColumns = {
+        "LogID", "SeqNum", "ProcessId", "ThreadId",
+        "RuleID", "MajorOp", "MinorOp", "OpStatus"
+    };
 
-    if (filters.contains("ProcessName") && !filters["ProcessName"].toString().isEmpty()) {
-        conditions << QString("ProcessName LIKE '%1%'").arg(filters["ProcessName"].toString());
-    }
+    for (auto it = filters.constBegin(); it != filters.constEnd(); ++it) {
+        QString column = it.key();
+        QString value = it.value().toString().trimmed();
 
-    if (filters.contains("FilePath") && !filters["FilePath"].toString().isEmpty()) {
-        conditions << QString("FilePath LIKE '%1'").arg(filters["FilePath"].toString());
+        if (value.isEmpty())
+            continue;
+
+        // Choose LIKE or = based on value content or heuristics
+        if (value.contains('%') || value.contains('_')) {
+            conditions << QString("%1 LIKE '%2'").arg(column, value); // allow wildcard input
+        } else if (column.contains("Path", Qt::CaseInsensitive) || column.contains("Name", Qt::CaseInsensitive)) {
+            conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value); // partial match for paths/files
+        } else if (column == "PreOpTime" || column == "PostOpTime") {
+            qint64 raw = convertFlexibleDateTimeToRawTicks(value);
+            if (raw != -1) {
+                QString op = (column == "PreOpTime") ? ">=" : "<=";
+                conditions << QString("%1 %2 %3").arg(column, op).arg(raw);
+            }
+        } else if (intColumns.contains(column)) {
+            bool ok = false;
+            int numVal = value.toInt(&ok);
+            if (ok) {
+                conditions << QString("%1 = %2").arg(column).arg(numVal);
+            } else {
+                qWarning() << "Invalid integer for column:" << column << "value:" << value;
+            }
+        } else {
+            conditions << QString("%1 = '%2'").arg(column, value);
+        }
     }
 
     QString query = "SELECT " + m_selectedRoles.join(", ") + " FROM " + m_currentTable;
@@ -342,14 +480,42 @@ void DatabaseManager::updateTotalPages() {
     QString countQuery = "SELECT COUNT(*) FROM " + m_currentTable;
 
     QStringList conditions;
-    if (m_filters.contains("MajorFunction") && !m_filters["MajorFunction"].toString().isEmpty())
-        conditions << QString("MajorFunction = '%1'").arg(m_filters["MajorFunction"].toString());
 
-    if (m_filters.contains("ProcessName") && !m_filters["ProcessName"].toString().isEmpty())
-        conditions << QString("ProcessName LIKE '%%1%%'").arg(m_filters["ProcessName"].toString());
+    // Match the same integer logic
+    static const QSet<QString> intColumns = {
+        "LogID", "SeqNum", "ProcessId", "ThreadId",
+        "RuleID", "MajorOp", "MinorOp", "OpStatus"
+    };
 
-    if (m_filters.contains("FilePath") && !m_filters["FilePath"].toString().isEmpty())
-        conditions << QString("FilePath LIKE '%%1%%'").arg(m_filters["FilePath"].toString());
+    for (auto it = m_filters.constBegin(); it != m_filters.constEnd(); ++it) {
+        QString column = it.key();
+        QString value = it.value().toString().trimmed();
+
+        if (value.isEmpty())
+            continue;
+
+        if (value.contains('%') || value.contains('_')) {
+            conditions << QString("%1 LIKE '%2'").arg(column, value);
+        } else if (column.contains("Path", Qt::CaseInsensitive) || column.contains("Name", Qt::CaseInsensitive)) {
+            conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value);
+        } else if (column == "PreOpTime" || column == "PostOpTime") {
+            qint64 raw = convertFlexibleDateTimeToRawTicks(value);
+            if (raw != -1) {
+                QString op = (column == "PreOpTime") ? ">=" : "<=";
+                conditions << QString("%1 %2 %3").arg(column, op).arg(raw);
+            }
+        } else if (intColumns.contains(column)) {
+            bool ok = false;
+            int numVal = value.toInt(&ok);
+            if (ok) {
+                conditions << QString("%1 = %2").arg(column).arg(numVal);
+            } else {
+                qWarning() << "Invalid integer for column (in count):" << column << "value:" << value;
+            }
+        } else {
+            conditions << QString("%1 = '%2'").arg(column, value);
+        }
+    }
 
     if (!conditions.isEmpty())
         countQuery += " WHERE " + conditions.join(" AND ");
@@ -359,6 +525,7 @@ void DatabaseManager::updateTotalPages() {
         qWarning() << "Count query failed:" << query.lastError().text();
         return;
     }
+
     int count = 0;
     if (query.next()) {
         count = query.value(0).toInt();
@@ -367,10 +534,11 @@ void DatabaseManager::updateTotalPages() {
     m_totalPages = (count + m_rowsPerPage - 1) / m_rowsPerPage;
     emit totalPagesChanged();
 
-    // Adjust currentPage if it’s now out of range
+    // Clamp current page within valid bounds
     if (m_currentPage >= m_totalPages) {
         m_currentPage = std::max(0, m_totalPages - 1);
         emit currentPageChanged();
     }
 }
+
 

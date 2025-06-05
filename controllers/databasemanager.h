@@ -34,9 +34,13 @@ public:
     // Functions for table management
     Q_INVOKABLE void runQuery(const QString &query);
     Q_INVOKABLE int computeColumnWidth(int columnIndex, int fontSize = 12);
-    Q_INVOKABLE QString convertUnixToDateTime(qint64 unix);
+    Q_INVOKABLE QString convertUnixToDateTime(qint64 timestamp);
+    Q_INVOKABLE qint64 convertFlexibleDateTimeToRawTicks(const QString &input);
+
     Q_INVOKABLE QStringList getRoleNames() const;
     void defineManualRoles();
+
+    Q_INVOKABLE QStringList getUniqueValues(const QString &columnName);
 
     // Setting what columns to display
     QStringList selectedRoles() const;
@@ -45,15 +49,17 @@ public:
 
     // Filtering Functions
     QVariantMap filters() const;
-    void setFilters(const QVariantMap &filters);
+    Q_INVOKABLE void setFilters(const QVariantMap &filters);
     Q_INVOKABLE void setFilter(const QString &key, const QVariant &value);
     Q_INVOKABLE void applyFiltersWithSort(const QVariantMap &filters, const QString &sortColumn = "", const QString &sortOrder = "ASC");
+    Q_INVOKABLE void clearFilters();
+    Q_INVOKABLE void removeFilter(const QString &key);
 
     // Sorting functions
     QString sortColumn() const;
-    void setSortColumn(const QString &column);
+    Q_INVOKABLE void setSortColumn(const QString &column);
     QString sortOrder() const;
-    void setSortOrder(const QString &order);
+    Q_INVOKABLE void setSortOrder(const QString &order);
 
     //refresh
     Q_INVOKABLE void refreshQuery();

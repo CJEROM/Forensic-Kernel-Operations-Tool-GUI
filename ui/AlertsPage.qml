@@ -53,7 +53,7 @@ Page {
 
             RowLayout {
                 anchors.fill: parent
-                // Layout.alignment: Qt.AlignHCenter
+                Layout.alignment: Qt.AlignHCenter
                 spacing: 10
 
                 Button {

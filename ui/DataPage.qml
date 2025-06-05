@@ -56,6 +56,17 @@ Page {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 10
 
+                // Image {
+                //     source: "filter_icon.png"
+                //     anchors.right: parent.right
+                //     anchors.rightMargin: 6
+                //     anchors.verticalCenter: parent.verticalCenter
+                //     MouseArea {
+                //         anchors.fill: parent
+                //         onClicked: filterPopup.open()
+                //     }
+                // }
+
                 Button {
                     width: 100
                     text: "Previous"
@@ -101,7 +112,7 @@ Page {
                         width: 200
 
                         Repeater {
-                            model: dbManager.selectedRoles()
+                            model: dbManager.getRoleNames()
 
                             MenuItem {
                                 contentItem: CheckBox {
@@ -123,6 +134,57 @@ Page {
                     width: 100
                     text: "Refresh"
                     onClicked: dbManager.refreshQuery()
+                }
+
+                Button {
+                    width: 100
+                    text: "Active Filters"
+                    enabled: dbManager.currentPage + 1 < dbManager.totalPages
+
+                    Menu {
+                        id: activeFiltersMenu
+                        width: 250
+
+                        Component.onCompleted: console.log("Filters:", JSON.stringify(dbManager.filters))
+
+                        Repeater {
+                            model: Object.keys(dbManager.filters)
+
+                            MenuItem {
+                                contentItem: Row {
+                                    spacing: 8
+
+                                    Label {
+                                        text: modelData + ": " + dbManager.filters[modelData]
+                                    }
+
+                                    Button {
+                                        text: "✖"
+                                        width: 24
+                                        height: 24
+                                        onClicked: {
+                                            dbManager.removeFilter(modelData);
+                                            activeFiltersMenu.close();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        MenuItem {
+                            visible: Object.keys(dbManager.filters).length === 0
+                            text: "No filters active"
+                            enabled: false
+                        }
+                    }
+
+                    onClicked: activeFiltersMenu.open()
+                }
+
+                Button {
+                    width: 100
+                    text: "Clear All Filters"
+                    onClicked: dbManager.clearFilters()
                 }
             }
         }
@@ -156,12 +218,142 @@ Page {
                     implicitHeight: 40
                     color: "#eeeeee"
                     border.color: "#aaaaaa"
-                    // visible: dbManager.selectedRoles.indexOf(tableView.roleNameList[column]) !== -1 ? true : false
+
+                    MouseArea {
+                        id: headerClickArea
+                        anchors.fill: parent
+                        onClicked: filterPopup.open() //["OpFileName", "ProcessFilePath", "MajorOp"].includes(dbManager.selectedRoles[column]) ? filterPopup.open() : filterPopup.close()
+                    }
 
                     Text {
                         anchors.centerIn: parent
                         font.bold: true
                         text: dbManager.selectedRoles[column]
+                    }
+
+                    Popup {
+                        id: filterPopup
+                        x: headerClickArea.mouseX
+                        y: headerClickArea.mouseY
+
+                        modal: false
+                        focus: true
+                        closePolicy: Popup.CloseOnPressOutside //Popup.NoAutoClose | Popup.CloseOnEscape |
+
+                        property string tempFilter: ""  // local buffer for any filter type
+
+                        // Automatically resize based on contents
+                        implicitWidth: contentItem.implicitWidth + 16
+                        implicitHeight: contentItem.implicitHeight + 16
+
+                        Column {
+                            id: contentItem
+                            padding: 8
+                            spacing: 8
+
+                            Text {
+                                text: "Filter " + dbManager.selectedRoles[column]
+                                font.bold: true
+                            }
+
+                            // CONDITIONAL FILTER WIDGET
+                            Loader {
+                                active: true
+                                sourceComponent: {
+                                    if (["OpFileName", "ProcessFilePath"].includes(dbManager.selectedRoles[column])) {
+                                        return textFilter
+                                    } else if (["PreOpTime", "PostOpTime"].includes(dbManager.selectedRoles[column])) {
+                                        return timestampFilter
+                                    } else if (["LogID", "SeqNum", "RuleID", "RuleAction"].includes(dbManager.selectedRoles[column])) {
+                                        //
+                                    } else { //if (["OprType", "ProcessFilePath", "ThreadId", "MajorOp", "MinorOp", "IrpFlags", "DeviceObj", "FileObj", "FileTransaction", "OpStatus", "Information"].includes(dbManager.selectedRoles[column]))
+                                        return comboFilter
+                                    }
+                                }
+                            }
+
+                            Component {
+                                id: textFilter
+                                TextField {
+                                    placeholderText: "Enter filter..."
+                                    text: filterPopup.tempFilter
+                                    onTextChanged: filterPopup.tempFilter = text
+                                }
+                            }
+
+                            Component {
+                                id: timestampFilter
+                                TextField {
+                                    placeholderText: "yyyy-MM-dd hh:mm:ss.aaaaaaa"
+                                    text: filterPopup.tempFilter
+                                    onTextChanged: filterPopup.tempFilter = text
+                                }
+                            }
+
+                            Component {
+                                id: comboFilter
+                                ComboBox {
+                                    width: 300
+                                    model: dbManager.getUniqueValues(dbManager.selectedRoles[column])
+                                    onCurrentTextChanged: filterPopup.tempFilter = currentText
+                                }
+                            }
+
+                            Row {
+                                spacing: 4
+
+                                Button {
+                                    text: "▲"
+                                    onClicked: {
+                                        dbManager.setSortColumn(dbManager.selectedRoles[column])
+                                        dbManager.setSortOrder("ASC")
+                                        console.log(dbManager.selectedRoles[column], "ASC")
+                                        dbManager.refreshQuery()
+                                        filterPopup.close()
+                                    }
+                                }
+
+                                Button {
+                                    text: "▼"
+                                    onClicked: {
+                                        dbManager.setSortColumn(dbManager.selectedRoles[column])
+                                        dbManager.setSortOrder("DESC")
+                                        console.log(dbManager.selectedRoles[column], "DESC")
+                                        dbManager.refreshQuery()
+                                        filterPopup.close()
+                                    }
+                                }
+
+                                Button {
+                                    text: "Apply Filter"
+                                    onClicked: {
+                                        const input = filterPopup.tempFilter;
+
+                                        // Only validate if it's a time column
+                                        if (["PreOpTime","PostOpTime"].includes(dbManager.selectedRoles[column])) {
+                                            const rawTicks = dbManager.convertFlexibleDateTimeToRawTicks(input);
+                                            if (rawTicks === -1) {
+                                                timestampFilter.text = ""
+                                                timestampFilter.placeholderText = "Invalid datetime (expected format: yyyy-MM-dd hh:mm:ss.aaaaaaa)";
+                                                return;
+                                            }
+                                        }
+
+                                        dbManager.setFilter(dbManager.selectedRoles[column], input);
+                                        dbManager.refreshQuery()
+                                        filterPopup.close()
+                                    }
+                                }
+
+                                Button {
+                                    text: "✕"
+                                    onClicked: {
+                                        dbManager.refreshQuery()
+                                        filterPopup.close()
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -189,8 +381,8 @@ Page {
                         case "LogID":  return 100   // LogID
                         case "SeqNum":  return 100   // SeqNum
                         case "OprType":  return 80  // OprType
-                        case "PreOpTime":  return 160  // PreOpTime
-                        case "PostOpTime":  return 160  // PostOpTime
+                        case "PreOpTime":  return 180  // PreOpTime
+                        case "PostOpTime":  return 180  // PostOpTime
                         case "ProcessId":  return 80   // ProcessId
                         case "ProcessFilePath":  return dbManager.computeColumnWidth(column, 12)  // ProcessFilePath
                         case "ThreadId":  return 80   // ThreadId
@@ -225,7 +417,9 @@ Page {
 
                     Text {
                         anchors.centerIn: parent
-                        text: model[dbManager.selectedRoles[column]]
+                        text: (["PreOpTime", "PostOpTime"].includes(dbManager.selectedRoles[column]))
+                              ? dbManager.convertUnixToDateTime(Number(model[dbManager.selectedRoles[column]]))
+                              : model[dbManager.selectedRoles[column]]
                         font.pixelSize: 12
                         elide: Text.ElideRight
                     }
