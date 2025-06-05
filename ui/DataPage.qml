@@ -183,6 +183,7 @@ Page {
                 Button {
                     width: 100
                     text: "Clear All Filters"
+                    enabled: Object.keys(dbManager.filters).length > 0
                     onClicked: dbManager.clearFilters()
                 }
             }
@@ -264,8 +265,8 @@ Page {
                                     } else if (["PreOpTime", "PostOpTime"].includes(dbManager.selectedRoles[column])) {
                                         return timestampFilter
                                     } else if (["LogID", "SeqNum", "RuleID", "RuleAction"].includes(dbManager.selectedRoles[column])) {
-                                        //
-                                    } else { //if (["OprType", "ProcessFilePath", "ThreadId", "MajorOp", "MinorOp", "IrpFlags", "DeviceObj", "FileObj", "FileTransaction", "OpStatus", "Information"].includes(dbManager.selectedRoles[column]))
+                                        // Don't do anything, these fields don't need filters
+                                    } else {
                                         return comboFilter
                                     }
                                 }
@@ -306,7 +307,6 @@ Page {
                                     onClicked: {
                                         dbManager.setSortColumn(dbManager.selectedRoles[column])
                                         dbManager.setSortOrder("ASC")
-                                        console.log(dbManager.selectedRoles[column], "ASC")
                                         dbManager.refreshQuery()
                                         filterPopup.close()
                                     }
@@ -317,7 +317,6 @@ Page {
                                     onClicked: {
                                         dbManager.setSortColumn(dbManager.selectedRoles[column])
                                         dbManager.setSortOrder("DESC")
-                                        console.log(dbManager.selectedRoles[column], "DESC")
                                         dbManager.refreshQuery()
                                         filterPopup.close()
                                     }
@@ -380,18 +379,18 @@ Page {
                         case "LogID":  return 100   // LogID
                         case "SeqNum":  return 100   // SeqNum
                         case "OprType":  return 80  // OprType
-                        case "PreOpTime":  return 180  // PreOpTime
-                        case "PostOpTime":  return 180  // PostOpTime
+                        case "PreOpTime":  return 200  // PreOpTime
+                        case "PostOpTime":  return 200  // PostOpTime
                         case "ProcessId":  return 80   // ProcessId
                         case "ProcessFilePath":  return dbManager.computeColumnWidth(column, 12)  // ProcessFilePath
                         case "ThreadId":  return 80   // ThreadId
-                        case "MajorOp":  return 300  // MajorOp
-                        case "MinorOp":  return 250  // MinorOp
+                        case "MajorOp":  return dbManager.computeColumnWidth(column, 12)  // MajorOp
+                        case "MinorOp":  return dbManager.computeColumnWidth(column, 12)  // MinorOp
                         case "IrpFlags": return 80  // IrpFlags
                         case "DeviceObj": return 160  // DeviceObj
                         case "FileObj": return 160  // FileObj
                         case "FileTransaction": return 160  // FileTransaction
-                        case "OpStatus": return 400  // OpStatus
+                        case "OpStatus": return dbManager.computeColumnWidth(column, 12)  // OpStatus
                         case "Information": return 160  // Information
                         case "Arg1": return 100  // Arg1
                         case "Arg2": return 100  // Arg2

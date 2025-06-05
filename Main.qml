@@ -48,6 +48,8 @@ ApplicationWindow {
             }
         }
 
+        //Have text field that can help you navigate file system, and on click and successfult database connection, pushes home page onto the stack.
+
         Component.onCompleted: push("qrc:/qt/qml/user/ui/HomePage.qml")
         // initialItem: "qrc:/qt/qml/user/ui/HomePage.qml"
     }

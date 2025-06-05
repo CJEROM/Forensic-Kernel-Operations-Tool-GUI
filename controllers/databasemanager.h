@@ -26,6 +26,7 @@ class DatabaseManager : public QObject
     //QML_ELEMENT
 public:
     explicit DatabaseManager(QObject *parent = nullptr);
+    Q_INVOKABLE int setDatabasePath(const QString &path);
     QAbstractItemModel * model() const;
 
     QString currentTable() const;

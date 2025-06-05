@@ -14,14 +14,17 @@
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject{parent} {
+    setDatabasePath("C:/Users/CephJ/Desktop/CSEC3100 Project/log.db");
+}
 
+int DatabaseManager::setDatabasePath(const QString &path) {
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName("C:/Users/CephJ/Desktop/CSEC3100 Project/log.db");
+    db.setDatabaseName(path);
     qDebug() << "Opening DB at:" << db.databaseName();
 
     if (!db.open()) {
         qWarning() << "Failed to open database:" << db.lastError().text();
-        return;
+        return 0;
     }
 
     defineManualRoles();
@@ -41,6 +44,8 @@ DatabaseManager::DatabaseManager(QObject *parent)
     m_totalPages = 1;
 
     refreshQuery();
+
+    return 1;
 }
 
 // =============================================================================== Exposing to QML ===============================================================================
@@ -81,7 +86,7 @@ QString DatabaseManager::convertUnixToDateTime(qint64 filetime) {
     qint64 seconds = unixTicks / TICKS_PER_SECOND;
     qint64 subSecondTicks = unixTicks % TICKS_PER_SECOND;
 
-    QDateTime dt = QDateTime::fromSecsSinceEpoch(seconds, Qt::UTC);
+    QDateTime dt = QDateTime::fromSecsSinceEpoch(seconds, QTimeZone("UTC"));
 
     // Full 100-nanosecond precision (7 decimal places)
     return dt.toString("yyyy-MM-dd hh:mm:ss.") +
@@ -112,7 +117,7 @@ qint64 DatabaseManager::convertFlexibleDateTimeToRawTicks(const QString &input) 
     QString fullDateTime = date + " " + time;
 
     QDateTime dt = QDateTime::fromString(fullDateTime, "yyyy-MM-dd hh:mm:ss");
-    dt.setTimeSpec(Qt::UTC); // very important
+    dt.setTimeZone(QTimeZone("UTC")); // very important
 
     if (!dt.isValid()) {
         qWarning() << "Invalid date-time input:" << fullDateTime;
