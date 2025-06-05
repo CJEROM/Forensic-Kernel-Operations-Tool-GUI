@@ -139,7 +139,6 @@ Page {
                 Button {
                     width: 100
                     text: "Active Filters"
-                    enabled: dbManager.currentPage + 1 < dbManager.totalPages
 
                     Menu {
                         id: activeFiltersMenu
