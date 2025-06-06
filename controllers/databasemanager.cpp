@@ -391,7 +391,7 @@ void DatabaseManager::applyFiltersWithSort(const QVariantMap &filters, const QSt
         if (value.contains('%') || value.contains('_')) {
             conditions << QString("%1 LIKE '%2'").arg(column, value); // allow wildcard input
         } else if (column == "OpFileName" || column == "ProcessFilePath") {
-            conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value); // partial match for paths/files
+            conditions << QString("%1 LIKE '%2'").arg(column, value); // partial match for paths/files
         } else if (column == "PreOpTime" || column == "PostOpTime") {
             qint64 raw = convertFlexibleDateTimeToRawTicks(value);
             if (raw != -1) {
@@ -507,7 +507,7 @@ void DatabaseManager::updateTotalPages() {
         if (value.contains('%') || value.contains('_')) {
             conditions << QString("%1 LIKE '%2'").arg(column, value);
         } else if (column == "OpFileName" || column == "ProcessFilePath") {
-            conditions << QString("%1 LIKE '%%1%'").arg(column).arg(value);
+            conditions << QString("%1 LIKE '%2'").arg(column, value);
         } else if (column == "PreOpTime" || column == "PostOpTime") {
             qint64 raw = convertFlexibleDateTimeToRawTicks(value);
             if (raw != -1) {
