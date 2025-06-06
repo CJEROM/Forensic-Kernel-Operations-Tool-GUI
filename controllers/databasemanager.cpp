@@ -10,12 +10,18 @@
 #include <QSqlRecord>
 #include <QDateTime>
 
+#include <QFile>
+#include <QTextStream>
+#include <QRegularExpression>
+
+#include <QMessageBox>
+
 // =============================================================================== Constructor ===============================================================================
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject{parent}
 {
-    setDatabasePath("C:/Users/CephJ/Desktop/CSEC3100 Project/log.db");
+    // setDatabasePath("C:/Users/CephJ/Desktop/CSEC3100 Project/log.db");
 }
 
 int DatabaseManager::setDatabasePath(const QString &path) {

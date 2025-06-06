@@ -22,7 +22,6 @@ class DataModelRegistry : public QObject {
     Q_PROPERTY(MinifilterLogModel* modelMajorOpByMode READ modelMajorOpByMode CONSTANT)
 
     Q_PROPERTY(MinifilterLogModel* modelFileCounts READ modelFileCounts CONSTANT)
-    Q_PROPERTY(MinifilterLogModel* modelFileWriteTiming READ modelFileWriteTiming CONSTANT)
 
     Q_PROPERTY(MinifilterLogModel* modelProcessCounts READ modelProcessCounts CONSTANT)
     Q_PROPERTY(MinifilterLogModel* modelThreadBreakdown READ modelThreadBreakdown CONSTANT)
@@ -44,7 +43,6 @@ public:
     Q_INVOKABLE MinifilterLogModel *modelMajorOpByMode() const { return m_modelMajorOpByMode; }
 
     Q_INVOKABLE MinifilterLogModel *modelFileCounts() const { return m_modelFileCounts; }
-    Q_INVOKABLE MinifilterLogModel *modelFileWriteTiming() const { return m_modelFileWriteTiming; }
 
     Q_INVOKABLE MinifilterLogModel *modelProcessCounts() const { return m_modelProcessCounts; }
     Q_INVOKABLE MinifilterLogModel *modelThreadBreakdown() const { return m_modelThreadBreakdown; }
@@ -63,7 +61,6 @@ private:
     MinifilterLogModel *m_modelMajorOpByMode;
 
     MinifilterLogModel *m_modelFileCounts;
-    MinifilterLogModel *m_modelFileWriteTiming;
 
     MinifilterLogModel *m_modelProcessCounts;
     MinifilterLogModel *m_modelThreadBreakdown;

@@ -14,12 +14,11 @@ DataModelRegistry::DataModelRegistry(QObject *parent) : QObject(parent) {
     m_modelMajorOpByMode = new MinifilterLogModel(this);
     //File Stats
     m_modelFileCounts = new MinifilterLogModel(this);
-    m_modelFileWriteTiming = new MinifilterLogModel(this);
     //Process Stats
     m_modelProcessCounts = new MinifilterLogModel(this);
     m_modelThreadBreakdown = new MinifilterLogModel(this);
 
-    refreshAllModels(); // This needs to be called later as well
+    // refreshAllModels(); // This needs to be called later as well
 }
 
 void DataModelRegistry::refreshAllModels() {
@@ -36,7 +35,6 @@ void DataModelRegistry::refreshAllModels() {
     m_modelMajorOpByMode->refreshQuery("SELECT * FROM View_MajorOpByRequestor");
     //File Stats
     m_modelFileCounts->refreshQuery("SELECT * FROM View_FileOpCounts");
-    m_modelFileWriteTiming->refreshQuery("SELECT * FROM View_FileWriteTiming");
     //Process Stats
     m_modelProcessCounts->refreshQuery("SELECT * FROM View_ProcessOpCounts");
     m_modelThreadBreakdown->refreshQuery("SELECT * FROM View_ThreadBreakdown");

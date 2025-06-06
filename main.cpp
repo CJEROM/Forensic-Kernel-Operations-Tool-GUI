@@ -31,9 +31,6 @@ int main(int argc, char *argv[])
     DataModelRegistry *dataModelRegistry = new DataModelRegistry;
     engine.rootContext()->setContextProperty("dataModelRegistry", dataModelRegistry);
 
-    // dbManager.setDatabasePath();
-    // dataModelRegistry.refreshAllModels();
-
     engine.loadFromModule("user", "Main");
 
     return app.exec();

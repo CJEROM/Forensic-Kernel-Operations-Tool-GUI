@@ -38,14 +38,14 @@ qt_add_qml_module(appuser
         assets/img/rule-black.png
         assets/img/settings-black.png
         assets/img/sort-black.png
+        assets/create.sql
     SOURCES
-
         controllers/minifilterlogmodel.h
         controllers/minifilterlogmodel.cpp
         controllers/databasemanager.h
         controllers/databasemanager.cpp
-        SOURCES controllers/datamodelregistry.h controllers/datamodelregistry.cpp
-
+        controllers/datamodelregistry.h
+        controllers/datamodelregistry.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

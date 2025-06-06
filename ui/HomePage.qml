@@ -46,10 +46,10 @@ Page {
 
             Repeater {
                 model: [
-                    { title: "Number of Operations", value: dataModelRegistry.modelTotalOps.get(0).TotalOperations },
-                    { title: "From User-Mode", value: dataModelRegistry.modelRequestorMode.get(1).Count },
+                    { title: "Number of Operations", value: dataModelRegistry.modelTotalOps.get(0).TotalOperations !== undefined ? dataModelRegistry.modelTotalOps.get(0).TotalOperations : 0 },
+                    { title: "From User-Mode", value: dataModelRegistry.modelRequestorMode.get(1).Count !== undefined ? dataModelRegistry.modelRequestorMode.get(1).Count : 0},
                     { title: "Blocked Operations", value: 0 },
-                    { title: "Alerts", value: dataModelRegistry.modelTotalAlerts.get(0).TotalAlerts }
+                    { title: "Alerts", value: dataModelRegistry.modelTotalAlerts.get(0).TotalAlerts !== undefined ? dataModelRegistry.modelTotalAlerts.get(0).TotalAlerts : 0}
                 ]
 
                 Rectangle {

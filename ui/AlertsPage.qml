@@ -93,33 +93,6 @@ Page {
                 }
 
                 Button {
-                    id: columnsDropdownButton
-                    text: "Columns To Show"
-
-                    Menu {
-                        id: columnsDropdownMenu
-                        width: 200
-
-                        Repeater {
-                            model: dbManager.getRoleNames()
-
-                            MenuItem {
-                                contentItem: CheckBox {
-                                    text: modelData
-                                    checked: dbManager.selectedRoles.indexOf(modelData) !== -1
-
-                                    onCheckedChanged: {
-                                        dbManager.toggleRole(modelData, checked)
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    onClicked: columnsDropdownMenu.open()
-                }
-
-                Button {
                     width: 100
                     text: "Refresh"
                     onClicked: dbManager.refreshQuery()

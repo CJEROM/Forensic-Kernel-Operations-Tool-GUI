@@ -56,17 +56,6 @@ Page {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 10
 
-                // Image {
-                //     source: "filter_icon.png"
-                //     anchors.right: parent.right
-                //     anchors.rightMargin: 6
-                //     anchors.verticalCenter: parent.verticalCenter
-                //     MouseArea {
-                //         anchors.fill: parent
-                //         onClicked: filterPopup.open()
-                //     }
-                // }
-
                 Button {
                     width: 100
                     text: "Previous"
