@@ -26,3 +26,14 @@ QHash<int, QByteArray> MinifilterLogModel::roleNames() const {
     }
     return roles;
 }
+
+QVariantMap MinifilterLogModel::get(int row) const {
+    QVariantMap result;
+    if (row < 0 || row >= rowCount()) return result;
+
+    for (int col = 0; col < columnCount(); ++col) {
+        QString key = headerData(col, Qt::Horizontal).toString();
+        result[key] = data(index(row, col), Qt::DisplayRole);
+    }
+    return result;
+}

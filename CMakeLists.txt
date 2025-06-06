@@ -4,7 +4,7 @@ project(user VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Charts Sql Core Gui Qml)
+find_package(Qt6 REQUIRED COMPONENTS Quick Charts Sql Core Gui Qml Graphs)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -66,6 +66,7 @@ target_link_libraries(appuser PUBLIC
     Qt::Qml
     Qt::Core
     Qt::Gui
+    Qt::Graphs
 )
 
 include(GNUInstallDirs)

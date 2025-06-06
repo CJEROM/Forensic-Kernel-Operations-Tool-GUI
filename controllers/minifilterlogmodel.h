@@ -13,5 +13,7 @@ public:
 
     QHash<int, QByteArray> roleNames() const override;
 
+    Q_INVOKABLE QVariantMap get(int row) const;
+
     Q_INVOKABLE void refreshQuery(const QString& query);
 };

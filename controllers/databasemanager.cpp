@@ -155,8 +155,7 @@ void DatabaseManager::refreshQuery() {
     updateTotalPages();
 }
 
-// Get unique values of a row in table
-
+// Get unique values of a column in table - used for filters combox box
 QStringList DatabaseManager::getUniqueValues(const QString &columnName) {
     QStringList values;
 

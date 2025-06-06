@@ -46,10 +46,10 @@ Page {
 
             Repeater {
                 model: [
-                    { title: "Number of Operations", value: dataModelRegistry.(datamodelTotalOps.count > 0 ? modelTotalOps.get(0).TotalOperations : "Loading...") },
-                    { title: "From User-Mode", value: ">999,999" },
-                    { title: "Blocked Operations", value: ">999,999" },
-                    { title: "Triggered Rules", value: ">999,999" }
+                    { title: "Number of Operations", value: dataModelRegistry.modelTotalOps.get(0).TotalOperations },
+                    { title: "From User-Mode", value: dataModelRegistry.modelRequestorMode.get(1).Count },
+                    { title: "Blocked Operations", value: 0 },
+                    { title: "Alerts", value: dataModelRegistry.modelTotalAlerts.get(0).TotalAlerts }
                 ]
 
                 Rectangle {
@@ -65,6 +65,8 @@ Page {
                             text: modelData.value
                             font.pixelSize: 18
                             font.bold: true
+                            horizontalAlignment: Text.AlignHCenter
+                            width: parent.width
                         }
 
                         Text {
