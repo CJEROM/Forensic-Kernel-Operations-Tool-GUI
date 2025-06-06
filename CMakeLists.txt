@@ -22,8 +22,8 @@ qt_add_qml_module(appuser
         ui/HomePage.qml
         ui/LeftSideMenuBar.qml
         ui/PageTitle.qml
-        ui/RulesPage.qml
-        ui/SettingsPage.qml
+
+
         ui/SideMenuButton.qml
         ui/OperationStats.qml
         ui/OperationFileStats.qml

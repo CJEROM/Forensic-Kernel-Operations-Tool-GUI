@@ -5,43 +5,71 @@ import QtCharts 2.15
 
 Column {
     spacing: 10
+    id: tableScroll
 
-    Rectangle {
+    anchors.fill: parent
+
+    HorizontalHeaderView {
+        id: fileStatTablenHeaders
+        syncView: fileStatTable
         width: parent.width
-        height: 400
-        color: "white"
+        height: 40
+        clip: true
+        z: 1
 
-        ChartView {
-            anchors.fill: parent
-            title: "Bar Chart 1"
-            legend.alignment: Qt.AlignBottom
-            antialiasing: true
+        delegate: Rectangle {
+            implicitWidth: 120
+            implicitHeight: 40
+            color: "#eeeeee"
+            border.color: "#aaaaaa"
 
-            BarSeries {
-                axisX: BarCategoryAxis { categories: ["2007", "2008", "2009", "2010", "2011", "2012"] }
-                BarSet { label: "Bob"; values: [2, 2, 3, 4, 5, 6] }
-                BarSet { label: "Susan"; values: [5, 1, 2, 4, 1, 7] }
-                BarSet { label: "James"; values: [3, 5, 8, 13, 5, 8] }
+            Text {
+                anchors.centerIn: parent
+                font.bold: true
+                text: column === 0 ? "OpFileName" : "Operations"
             }
         }
     }
 
-    Rectangle {
+    TableView {
+        id: fileStatTable
+        model: dataModelRegistry.modelFileCounts
+
         width: parent.width
-        height: 400
-        color: "white"
+        height: contentHeight
 
-        ChartView {
-            anchors.fill: parent
-            title: "Bar Chart 2"
-            legend.alignment: Qt.AlignBottom
-            antialiasing: true
+        clip: true
+        reuseItems: true
 
-            BarSeries {
-                axisX: BarCategoryAxis { categories: ["A", "B", "C"] }
-                BarSet { label: "Sample"; values: [1, 2, 3] }
+        columnSpacing: 1
+        rowSpacing: 1
+
+        columnWidthProvider: function(column) {
+            switch (column) {
+                case 0: return tableScroll.width - 140;  // OpFileName
+                case 1: return 120;  // Count
+                default: return 140;
+            }
+        }
+
+        delegate: Rectangle {
+            implicitWidth: 180; height: 32
+            color: "white"
+            border.color: "#cccccc"
+            Text {
+                anchors.centerIn: parent
+                text: column === 0 ? model.OpFileName : model.Count
+                font.pixelSize: 12
+                elide: Text.ElideRight
             }
         }
     }
-    // Add more Stats
+
+    Component.onCompleted: {
+        tableScroll.forceLayout()
+    }
+
+    onWidthChanged: tableScroll.forceLayout()
+    onHeightChanged: tableScroll.forceLayout()
 }
+

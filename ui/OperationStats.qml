@@ -114,14 +114,12 @@ Column {
                 }
             }
         }
-
-
     }
 
     RowLayout {
         height: 600; width: parent.width; spacing: 10
 
-        // === 3. Stacked Bar: MajorOp by RequestorMode ===
+        // Stacked Bar: MajorOp by RequestorMode
         ChartView {
             id: stackedBarChart
             title: "Major Operations by Requestor Mode"
@@ -292,7 +290,7 @@ Column {
     RowLayout {
         height: parent.width * 0.55; width: parent.width; spacing: 10
 
-        // === 5. Bar Chart for Operation Status Frequency ===
+        // Bar Chart for Operation Status Frequency
         ChartView {
             id: opStatusPieChart
             title: "Operation Status Breakdown"

@@ -5,25 +5,81 @@ import QtCharts 2.15
 
 Column {
     spacing: 10
+    anchors.fill: parent
 
-    Rectangle {
-        width: parent.width
-        height: 400
-        color: "white"
+    ScrollView {
+        id: tableWrapper
+        anchors.fill: parent
+        height: parent.height
 
-        ChartView {
+        Column {
+            id: tableScroll
+
             anchors.fill: parent
-            title: "Bar Chart 1"
-            legend.alignment: Qt.AlignBottom
-            antialiasing: true
 
-            BarSeries {
-                axisX: BarCategoryAxis { categories: ["2007", "2008", "2009", "2010", "2011", "2012"] }
-                BarSet { label: "Bob"; values: [2, 2, 3, 4, 5, 6] }
-                BarSet { label: "Susan"; values: [5, 1, 2, 4, 1, 7] }
-                BarSet { label: "James"; values: [3, 5, 8, 13, 5, 8] }
+            HorizontalHeaderView {
+                id: processStatTableHeaders
+                syncView: processStatTable
+                width: parent.width
+                height: 40
+                clip: true
+                z: 1
+
+                delegate: Rectangle {
+                    implicitWidth: 120
+                    implicitHeight: 40
+                    color: "#eeeeee"
+                    border.color: "#aaaaaa"
+
+                    Text {
+                        anchors.centerIn: parent
+                        font.bold: true
+                        text: column === 0 ? "PID" :
+                              column === 1 ? "Process Path" :
+                                             "Operations"
+                    }
+                }
+            }
+
+            TableView {
+                id: processStatTable
+                model: dataModelRegistry.modelProcessCounts
+
+                width: parent.width
+                height: contentHeight
+
+                clip: true
+                reuseItems: true
+
+                columnSpacing: 1
+                rowSpacing: 1
+
+                columnWidthProvider: function(column) {
+                    switch (column) {
+                        case 0: return 80;   // PID
+                        case 1: return tableWrapper.width - 200;  // Path
+                        case 2: return 120;  // Count
+                        default: return 140;
+                    }
+                }
+
+                delegate: Rectangle {
+                    implicitWidth: 180; height: 32
+                    color: "white"
+                    border.color: "#cccccc"
+                    Text {
+                        anchors.centerIn: parent
+                        text: column === 0 ? model.ProcessId :
+                              column === 1 ? model.ProcessFilePath :
+                                             model.Count
+                        font.pixelSize: 12
+                        elide: Text.ElideRight
+                    }
+                }
             }
         }
     }
-    // Add more Stats
+
+    onWidthChanged: tableScroll.forceLayout()
+    onHeightChanged: tableScroll.forceLayout()
 }

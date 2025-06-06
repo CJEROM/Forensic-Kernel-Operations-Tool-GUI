@@ -129,7 +129,6 @@ Page {
                     implicitHeight: 40
                     color: "#eeeeee"
                     border.color: "#aaaaaa"
-                    // visible: dbManager.selectedRoles.indexOf(tableView.roleNameList[column]) !== -1 ? true : false
 
                     Text {
                         anchors.centerIn: parent
@@ -137,8 +136,6 @@ Page {
                         text: dbManager.selectedRoles[column]
                     }
                 }
-
-                //Option where on clicking header, you get option to set sorting and filtering
             }
 
             // Header row
@@ -169,9 +166,7 @@ Page {
                 delegate: Rectangle {
                     implicitWidth: 120
                     implicitHeight: 32
-                    // color: styleData.selected ? "#d0eaff" : "#ffffff"
                     border.color: "#cccccc"
-                    // visible: dbManager.selectedRoles.indexOf(tableView.roleNameList[column]) !== -1 ? true : false
 
                     Text {
                         anchors.centerIn: parent
